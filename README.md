@@ -1,6 +1,6 @@
 # Customer Intelligence Platform
 
-A full-stack web application that helps small businesses understand customer behavior using RFM (Recency, Frequency, Monetary) analysis and K-Means clustering.
+A full-stack web application that helps small businesses understand customer behavior using RFM (Recency, Frequency, Monetary) analysis and K-Means clustering to generate actionable customer insights for small businesses.
 
 ## Features
 
