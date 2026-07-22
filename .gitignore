@@ -216,3 +216,23 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# =====================================
+# CustomerLens Project
+# =====================================
+
+# Backend virtual environment
+backend/venv/
+
+# Backend environment variables
+backend/.env
+
+# Logs
+backend/logs/
+*.log
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
