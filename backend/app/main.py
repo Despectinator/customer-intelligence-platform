@@ -1,25 +1,50 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends, FastAPI
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
-from app.api.routes import api_router
+from app.core.config import settings
+from app.database.database import get_db
 
-# Note: tables are created by database/schema.sql (run directly in the
-# Supabase SQL editor), not by SQLAlchemy at startup. This keeps a single
-# source of truth for the schema instead of two competing definitions.
-
-app = FastAPI(title="Customer Intelligence Platform API")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # tighten to your Vercel domain before final submission
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description="CustomerLens - Customer Intelligence Platform API",
 )
+
+
+@app.get("/")
+def root():
+    """Root endpoint."""
+    return {
+        "message": f"Welcome to {settings.APP_NAME}",
+        "version": settings.APP_VERSION,
+    }
 
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "application": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+    }
 
 
-app.include_router(api_router)
+@app.get("/health/database")
+def database_health(db: Session = Depends(get_db)):
+    """Check database connectivity."""
+    try:
+        db.execute(text("SELECT 1"))
+
+        return {
+            "status": "healthy",
+            "database": "connected",
+        }
+
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e),
+        }
