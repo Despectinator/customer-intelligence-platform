@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.api.routes import api_router
 from app.core.config import settings
 from app.database.database import get_db
 
@@ -10,6 +11,9 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description="CustomerLens - Customer Intelligence Platform API",
 )
+
+# Register all API routes
+app.include_router(api_router)
 
 
 @app.get("/")

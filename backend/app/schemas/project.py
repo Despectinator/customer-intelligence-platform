@@ -1,17 +1,18 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProjectCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
+    name: str = Field(min_length=1, max_length=255)
+    description: Optional[str] = Field(default=None, max_length=500)
 
 
 class ProjectUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    description: Optional[str] = Field(default=None, max_length=500)
 
 
 class ProjectOut(BaseModel):
