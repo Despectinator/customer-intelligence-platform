@@ -26,9 +26,9 @@ The backend follows RESTful API principles and is implemented with FastAPI.
 |---------|----------|-------------|
 | GET | /projects/{project_id}/customers | Retrieve customers in a project (supports search/filter query params) |
 | POST | /projects/{project_id}/customers | Create customer |
-| GET | /customers/{id} | Retrieve customer, including live-computed RFM values and current segment |
-| PUT | /customers/{id} | Update customer |
-| DELETE | /customers/{id} | Delete customer |
+| GET | /projects/{project_id}/customers/{customer_id} | Retrieve customer, including live-computed RFM values and current segment |
+| PUT | /projects/{project_id}/customers/{customer_id} | Update customer |
+| DELETE | /projects/{project_id}/customers/{customer_id} | Delete customer |
 
 ---
 

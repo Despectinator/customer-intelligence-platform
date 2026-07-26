@@ -32,9 +32,11 @@ Stores customer information for each project.
 |---------|-----------|-------------|-------------|
 | id | UUID | Primary Key | Unique customer identifier |
 | project_id | UUID | Foreign Key | References Projects |
-| customer_name | TEXT | NOT NULL | Customer full name |
-| email | TEXT | Nullable | Customer email |
+| first_name | TEXT | NOT NULL | Customer first name |
+| last_name | TEXT | NOT NULL | Customer last name |
+| email | TEXT | NOT NULL | Customer email — unique per project |
 | phone | TEXT | Nullable | Customer phone number |
+| company | TEXT | Nullable | Customer's company (useful for B2B analytics) |
 | created_at | TIMESTAMP | Default CURRENT_TIMESTAMP | Record creation date |
 
 ---

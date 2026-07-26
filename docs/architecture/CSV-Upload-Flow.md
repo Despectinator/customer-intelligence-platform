@@ -10,8 +10,11 @@ Endpoint: `POST /projects/{project_id}/transactions/upload-csv`
 
 | Column | Required | Notes |
 |---|---|---|
-| customer_name | Yes | Used to match an existing customer or create a new one |
-| email | No | If present, used as the primary match key (preferred over name) |
+| first_name | Yes | |
+| last_name | Yes | |
+| email | Yes | Primary match key — used to find an existing customer or create a new one (unique per project) |
+| phone | No | |
+| company | No | |
 | order_date | Yes | Must parse to a valid date |
 | order_amount | Yes | Must be a positive number |
 | payment_method | No | |

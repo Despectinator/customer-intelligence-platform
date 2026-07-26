@@ -30,9 +30,11 @@ erDiagram
     CUSTOMERS {
         uuid id PK
         uuid project_id FK
-        string customer_name
+        string first_name
+        string last_name
         string email
         string phone
+        string company
         datetime created_at
     }
 
