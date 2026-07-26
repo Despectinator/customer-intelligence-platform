@@ -21,10 +21,13 @@ create table if not exists projects (
 create table if not exists customers (
     id uuid primary key default uuid_generate_v4(),
     project_id uuid not null references projects(id) on delete cascade,
-    customer_name text not null,
-    email text,
+    first_name text not null,
+    last_name text not null,
+    email text not null,
     phone text,
-    created_at timestamptz not null default now()
+    company text,
+    created_at timestamptz not null default now(),
+    constraint uq_customer_project_email unique (project_id, email)
 );
 
 -- Transactions: the single source of truth RFM is calculated from
