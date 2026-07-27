@@ -1,5 +1,7 @@
 import uuid
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from supabase import Client, create_client
 
@@ -7,6 +9,9 @@ from app.core.config import settings
 
 
 _supabase_client: Client | None = None
+
+# FastAPI Bearer token security
+security = HTTPBearer()
 
 
 def _get_supabase_client() -> Client:
@@ -60,3 +65,22 @@ def verify_token(token: str) -> CurrentUser | None:
         print(e)
         print("=" * 60)
         return None
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> CurrentUser:
+    """
+    FastAPI dependency that validates the Bearer token
+    and returns the authenticated user.
+    """
+
+    user = verify_token(credentials.credentials)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+
+    return user
