@@ -38,8 +38,9 @@ The backend follows RESTful API principles and is implemented with FastAPI.
 |---------|----------|-------------|
 | GET | /customers/{id}/transactions | Retrieve a customer's transactions |
 | POST | /customers/{id}/transactions | Add transaction |
-| PUT | /transactions/{id} | Update transaction |
-| DELETE | /transactions/{id} | Delete transaction |
+| GET | /customers/{id}/transactions/{transaction_id} | Retrieve a single transaction |
+| PUT | /customers/{id}/transactions/{transaction_id} | Update transaction |
+| DELETE | /customers/{id}/transactions/{transaction_id} | Delete transaction |
 | POST | /projects/{project_id}/transactions/upload-csv | Bulk-import transactions from CSV |
 
 > Any create/update/delete above triggers the analytics flow: recalculate RFM, re-run K-Means, and update `Segments`/`Segment_History` if the result changed.
