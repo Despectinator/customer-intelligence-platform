@@ -42,6 +42,16 @@ class Settings:
         os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
     )
 
+    # ==========================
+    # Analytics / ML
+    # ==========================
+    # Number of K-Means segments to generate per project. Kept configurable
+    # rather than hardcoded in clustering.py, since this is a business
+    # tuning knob (how many customer tiers to show), not implementation
+    # detail. Matches the 4 documented segment labels (Loyal High-Value,
+    # At Risk, New, Lost) by default.
+    KMEANS_N_CLUSTERS = int(os.getenv("KMEANS_N_CLUSTERS", "4"))
+
     def validate(self) -> None:
         """
         Ensure all required environment variables are present.
