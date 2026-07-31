@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database.models import Transaction
 from app.schemas import TransactionCreate, TransactionUpdate
+from app.services import analytics_service
 
 
 def list_transactions(
@@ -35,7 +36,7 @@ def create_transaction(
     db.commit()
     db.refresh(transaction)
 
-    # TODO: Trigger analytics recomputation for this customer.
+    analytics_service.recompute_for_customer(db, customer_id)
 
     return transaction
 
@@ -83,7 +84,7 @@ def update_transaction(
     db.commit()
     db.refresh(transaction)
 
-    # TODO: Trigger analytics recomputation for this customer.
+    analytics_service.recompute_for_customer(db, customer_id)
 
     return transaction
 
@@ -102,4 +103,4 @@ def delete_transaction(
     db.delete(transaction)
     db.commit()
 
-    # TODO: Trigger analytics recomputation for this customer.
+    analytics_service.recompute_for_customer(db, customer_id)
