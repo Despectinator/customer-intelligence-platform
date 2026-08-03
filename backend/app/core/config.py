@@ -22,6 +22,13 @@ class Settings:
     APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
+    # Base URL the app is reachable at — used by scripts (e.g.
+    # seed_demo_data.py) that call the API over HTTP rather than
+    # importing it directly. Defaults to local dev; override via env var
+    # once deployed so the same script works against Render without
+    # editing source.
+    API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+
     # ==========================
     # Supabase
     # ==========================

@@ -106,3 +106,28 @@ def recompute_for_customer(db: Session, customer_id: uuid.UUID) -> dict[uuid.UUI
     if not customer:
         return {}
     return recompute_project_segments(db, customer.project_id)
+
+
+def list_project_segments(db: Session, project_id: uuid.UUID) -> list[Segment]:
+    """All current Segment rows for a project (one per segmented customer)."""
+    return db.query(Segment).filter(Segment.project_id == project_id).all()
+
+
+def get_customer_segment(db: Session, customer_id: uuid.UUID) -> Segment | None:
+    """The current Segment row for one customer, or None if not segmented yet."""
+    return db.query(Segment).filter(Segment.customer_id == customer_id).first()
+
+
+def list_recent_migrations(db: Session, project_id: uuid.UUID, limit: int = 20) -> list[SegmentHistory]:
+    """
+    Recent segment changes across a project, most recent first — powers
+    the "customer moved from At Risk to Loyal" live feed on the dashboard.
+    """
+    return (
+        db.query(SegmentHistory)
+        .join(Customer, SegmentHistory.customer_id == Customer.id)
+        .filter(Customer.project_id == project_id)
+        .order_by(SegmentHistory.changed_at.desc())
+        .limit(limit)
+        .all()
+    )

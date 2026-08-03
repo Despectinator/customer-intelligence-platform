@@ -14,6 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.database.database import Base, get_db
@@ -24,9 +25,14 @@ from app.api.dependencies import get_db as api_get_db, get_current_user as api_g
 
 @pytest.fixture()
 def test_db():
+    # StaticPool: see the identical comment in test_analytics_endpoints.py
+    # — without it, this test's passing/failing depends on whether
+    # FastAPI's threadpool happens to reuse the same thread that created
+    # the tables, which is not guaranteed.
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
     Base.metadata.create_all(engine)
     TestingSessionLocal = sessionmaker(bind=engine)
