@@ -29,6 +29,20 @@ class Settings:
     # editing source.
     API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 
+    # Comma-separated list of origins allowed to call this API from a
+    # browser. Defaults cover common local dev ports (Vite, CRA) so
+    # frontend work isn't blocked out of the box. Update this once the
+    # frontend is deployed (e.g. to your Vercel domain) — do NOT leave
+    # this as "*" in production, since that would allow any website to
+    # make authenticated requests on a logged-in user's behalf.
+    ALLOWED_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv(
+            "ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
+        ).split(",")
+        if origin.strip()
+    ]
+
     # ==========================
     # Supabase
     # ==========================
