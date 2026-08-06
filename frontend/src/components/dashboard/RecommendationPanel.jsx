@@ -1,0 +1,3 @@
+export default function RecommendationPanel({ recommendations = [] }) {
+  return <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><h2 className="text-lg font-semibold text-slate-900">AI Recommendations</h2>{recommendations.length === 0 ? <p className="mt-5 rounded-xl border border-dashed border-gray-300 px-4 py-10 text-center text-sm text-slate-500">Recommendations will appear here.</p> : <ul className="mt-5 space-y-3">{recommendations.map((recommendation) => <li key={recommendation.id} className="rounded-xl bg-slate-100 p-4 text-sm text-slate-600">{recommendation.text}</li>)}</ul>}</section>;
+}

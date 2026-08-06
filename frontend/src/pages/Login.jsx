@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
-import AuthLayout from "../layouts/AuthLayout";
-import { useAuth } from "../context/AuthContext";
+import AuthLayout from "../components/auth/AuthLayout";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Login() {
   const { supabase } = useAuth();
