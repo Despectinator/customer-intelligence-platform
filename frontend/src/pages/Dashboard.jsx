@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
-import { getDashboard } from "../services/dashboardService";
+import {
+  getDashboard,
+  getRevenue,
+} from "../services/dashboardService";
 import projectService from "../services/projectService";
 import { useProject } from "../hooks/useProject";
 import KPICard from "../components/dashboard/KPICard";
@@ -15,8 +18,10 @@ export default function Dashboard() {
   const { currentProject, setCurrentProject } = useProject();
   const [projects, setProjects] = useState([]);
   const [dashboard, setDashboard] = useState(null);
+  const [segmentData, setSegmentData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [segmentLoading, setSegmentLoading] = useState(false);
   const [error, setError] = useState("");
   const [dashboardError, setDashboardError] = useState("");
   const [modalMode, setModalMode] = useState(null);
@@ -51,14 +56,26 @@ export default function Dashboard() {
 
     async function loadDashboard() {
       setDashboardLoading(true);
+      setSegmentLoading(true);
       setDashboardError("");
 
       try {
-        setDashboard(await getDashboard(currentProject.id));
+        const [dashboardResponse, segmentResponse] = await Promise.all([
+          getDashboard(currentProject.id),
+          getRevenue(currentProject.id),
+        ]);
+
+        console.log("Dashboard response:", dashboardResponse);
+        console.log("Segment response:", segmentResponse);
+
+        setDashboard(dashboardResponse);
+        setSegmentData(segmentResponse);
       } catch (loadError) {
+        console.error("Dashboard loading failed:", loadError);
         setDashboardError(loadError.message || "Could not load dashboard data.");
       } finally {
         setDashboardLoading(false);
+        setSegmentLoading(false);
       }
     }
 
@@ -138,12 +155,12 @@ export default function Dashboard() {
         <KPICard title="Revenue" value={dashboardLoading ? "…" : dashboard ? `₨${dashboard.total_revenue.toLocaleString()}` : "—"} subtitle="Current dataset" icon="₨" color="emerald" />
         <KPICard title="Customers" value={dashboardLoading ? "…" : dashboard ? dashboard.total_customers : "—"} subtitle="Registered" icon="👥" color="cyan" />
         <KPICard title="Projects" value={loading ? "…" : projects.length} subtitle="Active" icon="📁" color="amber" />
-        <KPICard title="Segments" value={dashboardLoading ? "…" : dashboard ? dashboard.segment_breakdown.length : "—"} subtitle="Generated" icon="🧠" color="rose" />
+        <KPICard title="Segments" value={segmentLoading ? "…" : segmentData.length} subtitle="Generated" icon="🧠" color="rose" />
       </section>
 
       <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2" aria-label="Analytics overview">
-        <RevenueChart />
-        <SegmentChart />
+        <RevenueChart data={segmentData} loading={dashboardLoading} />
+        <SegmentChart data={segmentData} loading={segmentLoading} />
       </section>
 
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">

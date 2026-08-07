@@ -17,9 +17,11 @@ from app.schemas.segment import (
     SegmentSummary,
     DashboardOverview,
     SegmentHistoryOut,
+    RevenueByDate,
 )
 from app.services import project_service, analytics_service
 from app.analytics.dashboard import get_dashboard_overview
+from app.analytics.revenue import revenue_by_segment, revenue_by_date
 from app.analytics.insights import get_recommendation
 
 router = APIRouter(tags=["Analytics"])
@@ -67,8 +69,6 @@ def segments_summary(
     current_user: CurrentUser = Depends(get_current_user),
 ):
     project_service.get_owned_project(db, project_id, current_user.id)
-    from app.analytics.revenue import revenue_by_segment
-
     return revenue_by_segment(db, project_id)
 
 
@@ -113,6 +113,19 @@ def dashboard_overview(
 ):
     project_service.get_owned_project(db, project_id, current_user.id)
     return get_dashboard_overview(db, project_id)
+
+
+@router.get(
+    "/projects/{project_id}/dashboard/revenue",
+    response_model=list[RevenueByDate],
+)
+def dashboard_revenue(
+    project_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    project_service.get_owned_project(db, project_id, current_user.id)
+    return revenue_by_date(db, project_id)
 
 
 @router.get("/projects/{project_id}/dashboard/migrations", response_model=list[SegmentHistoryOut])

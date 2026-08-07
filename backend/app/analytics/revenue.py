@@ -46,3 +46,34 @@ def revenue_by_segment(db: Session, project_id: uuid.UUID) -> list[dict]:
         }
         for row in rows
     ]
+
+
+def revenue_by_date(db: Session, project_id: uuid.UUID) -> list[dict]:
+    """
+    Returns total project revenue grouped by transaction order_date.
+
+    Example:
+    [
+        {"date": "2025-12-27", "revenue": 80.0},
+        {"date": "2025-12-28", "revenue": 500.0},
+    ]
+    """
+    rows = (
+        db.query(
+            Transaction.order_date.label("date"),
+            func.coalesce(func.sum(Transaction.order_amount), 0).label("revenue"),
+        )
+        .join(Customer, Transaction.customer_id == Customer.id)
+        .filter(Customer.project_id == project_id)
+        .group_by(Transaction.order_date)
+        .order_by(Transaction.order_date)
+        .all()
+    )
+
+    return [
+        {
+            "date": row.date.isoformat(),
+            "revenue": float(row.revenue),
+        }
+        for row in rows
+    ]

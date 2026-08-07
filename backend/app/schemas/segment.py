@@ -32,6 +32,11 @@ class DashboardOverview(BaseModel):
     segment_breakdown: list[SegmentSummary]
 
 
+class RevenueByDate(BaseModel):
+    date: str
+    revenue: float
+
+
 class SegmentHistoryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
