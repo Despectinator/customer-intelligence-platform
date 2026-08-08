@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import get_db, get_current_user
 from app.core.security import CurrentUser
 from app.database.models import Customer, Project, Segment
+from app.analytics.activity import get_recent_activity
 from app.schemas.segment import (
     SegmentOut,
     SegmentSummary,
@@ -19,6 +20,7 @@ from app.schemas.segment import (
     SegmentHistoryOut,
     RevenueByDate,
 )
+from app.schemas.activity import ActivityOut
 from app.services import project_service, analytics_service
 from app.analytics.dashboard import get_dashboard_overview
 from app.analytics.revenue import revenue_by_segment, revenue_by_date
@@ -126,6 +128,20 @@ def dashboard_revenue(
 ):
     project_service.get_owned_project(db, project_id, current_user.id)
     return revenue_by_date(db, project_id)
+
+
+@router.get(
+    "/projects/{project_id}/dashboard/activity",
+    response_model=list[ActivityOut],
+)
+def dashboard_activity(
+    project_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    project_service.get_owned_project(db, project_id, current_user.id)
+
+    return get_recent_activity(db, project_id)
 
 
 @router.get("/projects/{project_id}/dashboard/migrations", response_model=list[SegmentHistoryOut])

@@ -9,6 +9,10 @@ export function getDashboard(projectId) {
 }
 
 export function getRevenue(projectId) {
+  return api.get(`/projects/${projectId}/dashboard/revenue`);
+}
+
+export function getSegmentSummary(projectId) {
   return api.get(`/projects/${projectId}/segments/summary`);
 }
 
@@ -20,9 +24,15 @@ export function getRecommendations(projectId) {
   return api.get(`/projects/${projectId}/segments`);
 }
 
+export function getActivity(projectId) {
+  return api.get(`/projects/${projectId}/dashboard/activity`);
+}
+
 export default {
   getDashboard,
   getRevenue,
+  getSegmentSummary,
   getInsights,
   getRecommendations,
+  getActivity,
 };

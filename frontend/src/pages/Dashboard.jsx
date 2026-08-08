@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import {
   getDashboard,
   getRevenue,
+  getActivity,
 } from "../services/dashboardService";
 import projectService from "../services/projectService";
 import { useProject } from "../hooks/useProject";
@@ -19,9 +20,12 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [dashboard, setDashboard] = useState(null);
   const [segmentData, setSegmentData] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [segmentLoading, setSegmentLoading] = useState(false);
+  const [activityLoading, setActivityLoading] = useState(false);
   const [error, setError] = useState("");
   const [dashboardError, setDashboardError] = useState("");
   const [modalMode, setModalMode] = useState(null);
@@ -57,25 +61,31 @@ export default function Dashboard() {
     async function loadDashboard() {
       setDashboardLoading(true);
       setSegmentLoading(true);
+      setActivityLoading(true);
       setDashboardError("");
 
       try {
-        const [dashboardResponse, segmentResponse] = await Promise.all([
+        const [dashboardResponse, revenueResponse, activityResponse] = await Promise.all([
           getDashboard(currentProject.id),
           getRevenue(currentProject.id),
+          getActivity(currentProject.id),
         ]);
 
         console.log("Dashboard response:", dashboardResponse);
-        console.log("Segment response:", segmentResponse);
+        console.log("Revenue response:", revenueResponse);
+        console.log("Activity response:", activityResponse);
 
         setDashboard(dashboardResponse);
-        setSegmentData(segmentResponse);
+        setSegmentData(dashboardResponse.segment_breakdown || []);
+        setRevenueData(revenueResponse || []);
+        setActivityData(activityResponse || []);
       } catch (loadError) {
         console.error("Dashboard loading failed:", loadError);
         setDashboardError(loadError.message || "Could not load dashboard data.");
       } finally {
         setDashboardLoading(false);
         setSegmentLoading(false);
+        setActivityLoading(false);
       }
     }
 
@@ -159,12 +169,12 @@ export default function Dashboard() {
       </section>
 
       <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2" aria-label="Analytics overview">
-        <RevenueChart data={segmentData} loading={dashboardLoading} />
+        <RevenueChart data={revenueData} loading={dashboardLoading} />
         <SegmentChart data={segmentData} loading={segmentLoading} />
       </section>
 
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <RecentActivityTable />
+        <RecentActivityTable activities={activityData} loading={activityLoading} />
         <RecommendationPanel />
       </section>
 
