@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../lib/api";
 import {
   getDashboard,
   getRevenue,
   getActivity,
+  getRecommendations,
 } from "../services/dashboardService";
 import projectService from "../services/projectService";
 import { useProject } from "../hooks/useProject";
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [segmentData, setSegmentData] = useState([]);
   const [revenueData, setRevenueData] = useState([]);
   const [activityData, setActivityData] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [segmentLoading, setSegmentLoading] = useState(false);
@@ -31,6 +32,8 @@ export default function Dashboard() {
   const [modalMode, setModalMode] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadProjects() {
       setLoading(true);
       setError("");
@@ -38,20 +41,25 @@ export default function Dashboard() {
       try {
         const response = await projectService.getProjects();
 
-        setProjects(response);
-        if (response.length > 0) {
-          setCurrentProject(response[0]);
+        if (!cancelled) {
+          setProjects(response || []);
         }
       } catch (loadError) {
         console.error(loadError);
         setError(loadError.message || "Could not load projects.");
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     loadProjects();
-  }, [setCurrentProject]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentProject) {
@@ -65,20 +73,43 @@ export default function Dashboard() {
       setDashboardError("");
 
       try {
-        const [dashboardResponse, revenueResponse, activityResponse] = await Promise.all([
+        const [dashboardResponse, revenueResponse, activityResponse, recommendationsResponse] = await Promise.all([
           getDashboard(currentProject.id),
           getRevenue(currentProject.id),
           getActivity(currentProject.id),
+          getRecommendations(currentProject.id),
         ]);
 
         console.log("Dashboard response:", dashboardResponse);
         console.log("Revenue response:", revenueResponse);
         console.log("Activity response:", activityResponse);
+        console.log("Recommendations response:", recommendationsResponse);
 
         setDashboard(dashboardResponse);
         setSegmentData(dashboardResponse.segment_breakdown || []);
         setRevenueData(revenueResponse || []);
         setActivityData(activityResponse || []);
+
+        const uniqueRecommendations = [];
+        const seenSegments = new Set();
+
+        for (const segment of recommendationsResponse || []) {
+          if (
+            segment.segment_name &&
+            segment.recommendation &&
+            !seenSegments.has(segment.segment_name)
+          ) {
+            seenSegments.add(segment.segment_name);
+
+            uniqueRecommendations.push({
+              id: segment.segment_name,
+              segment: segment.segment_name,
+              text: segment.recommendation,
+            });
+          }
+        }
+
+        setRecommendations(uniqueRecommendations);
       } catch (loadError) {
         console.error("Dashboard loading failed:", loadError);
         setDashboardError(loadError.message || "Could not load dashboard data.");
@@ -93,13 +124,13 @@ export default function Dashboard() {
   }, [currentProject]);
 
   async function handleCreate(values) {
-    const created = await api.post("/projects", values);
+    const created = await projectService.createProject(values);
     setProjects((current) => [created, ...current]);
     setCurrentProject(created);
   }
 
   async function handleUpdate(projectId, values) {
-    const updated = await api.put(`/projects/${projectId}`, values);
+    const updated = await projectService.updateProject(projectId, values);
     setProjects((current) =>
       current.map((project) => (project.id === projectId ? updated : project))
     );
@@ -109,7 +140,7 @@ export default function Dashboard() {
     if (!window.confirm(`Delete "${project.name}"? This cannot be undone.`)) return;
 
     try {
-      await api.del(`/projects/${project.id}`);
+      await projectService.deleteProject(project.id);
       setProjects((current) => {
         const remaining = current.filter(({ id }) => id !== project.id);
         if (currentProject?.id === project.id) {
@@ -175,7 +206,7 @@ export default function Dashboard() {
 
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <RecentActivityTable activities={activityData} loading={activityLoading} />
-        <RecommendationPanel />
+        <RecommendationPanel recommendations={recommendations} />
       </section>
 
       {error && (

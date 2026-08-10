@@ -87,6 +87,23 @@ def test_recompute_for_nonexistent_customer_returns_empty(db):
     assert result == {}
 
 
+def test_recompute_removes_segment_for_customer_without_transactions(db, project):
+    customer_a = make_customer(db, project.id, "a@example.com")
+    transaction_a = make_transaction(db, customer_a.id, date(2026, 7, 1), "10.00")
+
+    customer_b = make_customer(db, project.id, "b@example.com")
+    make_transaction(db, customer_b.id, date(2026, 1, 1), "15.00")
+
+    analytics_service.recompute_project_segments(db, project.id)
+    assert db.query(Segment).filter(Segment.customer_id == customer_a.id).first()
+
+    db.delete(transaction_a)
+    db.commit()
+    analytics_service.recompute_project_segments(db, project.id)
+
+    assert db.query(Segment).filter(Segment.customer_id == customer_a.id).first() is None
+
+
 def test_segment_history_logs_only_on_actual_label_change(db, project):
     customer_a = make_customer(db, project.id, "a@example.com")
     make_transaction(db, customer_a.id, date(2026, 7, 1), "10.00")

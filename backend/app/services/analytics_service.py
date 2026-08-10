@@ -34,10 +34,23 @@ def recompute_project_segments(db: Session, project_id: uuid.UUID) -> dict[uuid.
     """
     rfm_records = calculate_project_rfm(db, project_id)
     if not rfm_records:
+        db.query(Segment).filter(Segment.project_id == project_id).delete(
+            synchronize_session=False
+        )
+        db.commit()
         return {}
+
+    segmented_customer_ids = {
+        record["customer_id"] for record in rfm_records
+    }
+    db.query(Segment).filter(
+        Segment.project_id == project_id,
+        ~Segment.customer_id.in_(segmented_customer_ids),
+    ).delete(synchronize_session=False)
 
     cluster_assignment = cluster_customers(rfm_records)
     if not cluster_assignment:
+        db.commit()
         return {}
 
     cluster_labels = label_clusters(rfm_records, cluster_assignment)

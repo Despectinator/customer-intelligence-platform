@@ -4,7 +4,7 @@ export default function SegmentChart({
   loading = false,
 }) {
   const maxCustomers = Math.max(
-    ...data.map((segment) => segment.customer_count),
+    ...data.map((segment) => Number(segment.customer_count || 0)),
     1
   );
 
@@ -26,8 +26,8 @@ export default function SegmentChart({
         ) : (
           <div className="space-y-5">
             {data.map((segment) => {
-              const width =
-                (segment.customer_count / maxCustomers) * 100;
+              const customerCount = Number(segment.customer_count || 0);
+              const width = (customerCount / maxCustomers) * 100;
 
               return (
                 <div key={segment.segment_name}>
@@ -38,12 +38,14 @@ export default function SegmentChart({
                       </p>
 
                       <p className="text-xs text-slate-500">
-                        {segment.revenue_percentage?.toFixed(2)}% of revenue
+                        {Number(
+                          segment.revenue_percentage || 0
+                        ).toFixed(2)}% of revenue
                       </p>
                     </div>
 
                     <span className="text-sm font-bold text-cyan-600">
-                      {segment.customer_count}
+                      {customerCount}
                     </span>
                   </div>
 

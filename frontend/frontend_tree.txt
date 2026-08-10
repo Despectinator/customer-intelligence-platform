@@ -1,0 +1,70 @@
+frontend/
+├── .env.example
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── package-lock.json
+├── README.md
+├── vite.config.js
+├── public/
+│   ├── favicon.svg
+│   └── icons.svg
+└── src/
+    ├── App.css
+    ├── App.jsx
+    ├── index.css
+    ├── main.jsx
+    ├── api/
+    ├── assets/
+    │   ├── hero.png
+    │   ├── react.svg
+    │   └── vite.svg
+    ├── components/
+    │   ├── ProtectedRoute.jsx
+    │   ├── auth/
+    │   │   ├── AuthLayout.jsx
+    │   │   ├── ClusterVisual.jsx
+    │   │   └── FormField.jsx
+    │   ├── common/
+    │   ├── dashboard/
+    │   │   ├── ActivityTable.jsx
+    │   │   ├── KPICard.jsx
+    │   │   ├── RecommendationPanel.jsx
+    │   │   ├── RevenueChart.jsx
+    │   │   └── SegmentChart.jsx
+    │   ├── layout/
+    │   │   ├── AppShell.jsx
+    │   │   ├── Navbar.jsx
+    │   │   └── Sidebar.jsx
+    │   ├── modal/
+    │   │   ├── Modal.jsx
+    │   │   └── ProjectFormModal.jsx
+    │   └── tables/
+    ├── constants/
+    │   └── navigation.js
+    ├── context/
+    │   ├── AuthContext.jsx
+    │   ├── ProjectContext.jsx
+    │   ├── authContextStore.js
+    │   └── projectContextStore.js
+    ├── hooks/
+    │   ├── useAuth.js
+    │   └── useProject.js
+    ├── layouts/
+    │   └── DashboardLayout.jsx
+    ├── lib/
+    │   ├── api.js
+    │   └── supabaseClient.js
+    ├── pages/
+    │   ├── Dashboard.jsx
+    │   ├── Login.jsx
+    │   └── Signup.jsx
+    ├── services/
+    │   ├── dashboardService.js
+    │   └── projectService.js
+    ├── styles/
+    └── utils/
+
+# Generated/local items intentionally omitted:
+# node_modules/, dist/, and frontend/.env
