@@ -94,12 +94,20 @@ export default function Customers() {
                       {customer.email}
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <Link
-                        to={`/customers/${customer.id}/transactions`}
-                        className="font-medium text-cyan-600 hover:text-cyan-700"
-                      >
-                        View Transactions
-                      </Link>
+                      <div className="flex items-center justify-end gap-5">
+                        <Link
+                          to={`/customers/${customer.id}`}
+                          className="font-medium text-cyan-600 hover:text-cyan-700"
+                        >
+                          View Customer
+                        </Link>
+                        <Link
+                          to={`/customers/${customer.id}/transactions`}
+                          className="font-medium text-cyan-600 hover:text-cyan-700"
+                        >
+                          View Transactions
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
