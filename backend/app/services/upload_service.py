@@ -70,6 +70,18 @@ def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str
     }, None
 
 
+def _transaction_key(
+    customer_id: uuid.UUID,
+    order_date: date,
+    order_amount: Decimal,
+    payment_method: str | None,
+) -> tuple:
+    normalized_payment_method = (
+        payment_method.strip().lower() if payment_method else None
+    )
+    return customer_id, order_date, order_amount, normalized_payment_method
+
+
 def process_csv_upload(db: Session, project_id: uuid.UUID, file_contents: str) -> UploadResult:
     reader = csv.DictReader(io.StringIO(file_contents))
 
@@ -92,6 +104,22 @@ def process_csv_upload(db: Session, project_id: uuid.UUID, file_contents: str) -
         for c in db.query(Customer).filter(Customer.project_id == project_id).all()
         if c.email
     }
+
+    existing_transaction_keys = {
+        _transaction_key(
+            transaction.customer_id,
+            transaction.order_date,
+            transaction.order_amount,
+            transaction.payment_method,
+        )
+        for transaction in (
+            db.query(Transaction)
+            .join(Customer, Transaction.customer_id == Customer.id)
+            .filter(Customer.project_id == project_id)
+            .all()
+        )
+    }
+    upload_transaction_keys = set()
 
     customers_created = 0
     transactions_inserted = 0
@@ -122,6 +150,47 @@ def process_csv_upload(db: Session, project_id: uuid.UUID, file_contents: str) -
             existing_customers[parsed["email"]] = customer_id
             customers_created += 1
 
+        existing_transaction = (
+            db.query(Transaction)
+            .filter(
+                Transaction.customer_id == customer_id,
+                Transaction.order_date == parsed["order_date"],
+                Transaction.order_amount == parsed["order_amount"],
+                Transaction.payment_method == parsed["payment_method"],
+            )
+            .first()
+        )
+
+        if existing_transaction:
+            rows_skipped += 1
+            errors.append(
+                UploadRowError(
+                    row=row_number,
+                    reason="Duplicate transaction already exists",
+                )
+            )
+            continue
+
+        transaction_key = _transaction_key(
+            customer_id,
+            parsed["order_date"],
+            parsed["order_amount"],
+            parsed["payment_method"],
+        )
+
+        if (
+            transaction_key in existing_transaction_keys
+            or transaction_key in upload_transaction_keys
+        ):
+            rows_skipped += 1
+            errors.append(
+                UploadRowError(
+                    row=row_number,
+                    reason="Duplicate transaction already exists",
+                )
+            )
+            continue
+
         db.add(
             Transaction(
                 customer_id=customer_id,
@@ -130,6 +199,7 @@ def process_csv_upload(db: Session, project_id: uuid.UUID, file_contents: str) -
                 payment_method=parsed["payment_method"],
             )
         )
+        upload_transaction_keys.add(transaction_key)
         transactions_inserted += 1
         affected_customer_ids.add(customer_id)
 
