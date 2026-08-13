@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { useProject } from "../hooks/useProject";
 import projectService from "../services/projectService";
@@ -226,6 +227,12 @@ export default function Projects() {
                         Selected
                       </span>
                     )}
+                    <Link
+                      to={`/projects/${project.id}/customers`}
+                      className="rounded-lg px-4 py-2 text-sm font-medium text-cyan-700 transition hover:bg-cyan-50"
+                    >
+                      View Customers
+                    </Link>
                     <button
                       type="button"
                       onClick={() => handleDelete(project)}

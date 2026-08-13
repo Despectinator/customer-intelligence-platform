@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   getDashboard,
   getRevenue,
   getActivity,
   getRecommendations,
-  getMigrations,
 } from "../services/dashboardService";
 import projectService from "../services/projectService";
 import { useProject } from "../hooks/useProject";
@@ -13,9 +11,7 @@ import KPICard from "../components/dashboard/KPICard";
 import RevenueChart from "../components/dashboard/RevenueChart";
 import SegmentChart from "../components/dashboard/SegmentChart";
 import RecentActivityTable from "../components/dashboard/ActivityTable";
-import RecommendationPanel from "../components/dashboard/RecommendationPanel";
-import MigrationHistory from "../components/dashboard/MigrationHistory";
-import ProjectFormModal from "../components/modal/ProjectFormModal";
+import SegmentSummary from "../components/dashboard/SegmentSummary";
 
 export default function Dashboard() {
   const { currentProject, setCurrentProject } = useProject();
@@ -25,15 +21,12 @@ export default function Dashboard() {
   const [revenueData, setRevenueData] = useState([]);
   const [activityData, setActivityData] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
-  const [migrations, setMigrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [segmentLoading, setSegmentLoading] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
-  const [migrationLoading, setMigrationLoading] = useState(false);
   const [error, setError] = useState("");
   const [dashboardError, setDashboardError] = useState("");
-  const [modalMode, setModalMode] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,16 +67,14 @@ export default function Dashboard() {
       setDashboardLoading(true);
       setSegmentLoading(true);
       setActivityLoading(true);
-      setMigrationLoading(true);
       setDashboardError("");
 
       try {
-        const [dashboardResponse, revenueResponse, activityResponse, recommendationsResponse, migrationResponse] = await Promise.all([
+        const [dashboardResponse, revenueResponse, activityResponse, recommendationsResponse] = await Promise.all([
           getDashboard(currentProject.id),
           getRevenue(currentProject.id),
           getActivity(currentProject.id),
           getRecommendations(currentProject.id),
-          getMigrations(currentProject.id),
         ]);
 
         console.log("Dashboard response:", dashboardResponse);
@@ -95,7 +86,6 @@ export default function Dashboard() {
         setSegmentData(dashboardResponse.segment_breakdown || []);
         setRevenueData(revenueResponse || []);
         setActivityData(activityResponse || []);
-        setMigrations(migrationResponse || []);
 
         const uniqueRecommendations = [];
         const seenSegments = new Set();
@@ -124,43 +114,11 @@ export default function Dashboard() {
         setDashboardLoading(false);
         setSegmentLoading(false);
         setActivityLoading(false);
-        setMigrationLoading(false);
       }
     }
 
     loadDashboard();
   }, [currentProject]);
-
-  async function handleCreate(values) {
-    const created = await projectService.createProject(values);
-    setProjects((current) => [created, ...current]);
-    setCurrentProject(created);
-  }
-
-  async function handleUpdate(projectId, values) {
-    const updated = await projectService.updateProject(projectId, values);
-    setProjects((current) =>
-      current.map((project) => (project.id === projectId ? updated : project))
-    );
-  }
-
-  async function handleDelete(project) {
-    if (!window.confirm(`Delete "${project.name}"? This cannot be undone.`)) return;
-
-    try {
-      await projectService.deleteProject(project.id);
-      setProjects((current) => {
-        const remaining = current.filter(({ id }) => id !== project.id);
-        if (currentProject?.id === project.id) {
-          setDashboard(null);
-          setCurrentProject(remaining[0] ?? null);
-        }
-        return remaining;
-      });
-    } catch (deleteError) {
-      setError(deleteError.message || "Could not delete this project.");
-    }
-  }
 
   if (loading) {
     return (
@@ -203,13 +161,6 @@ export default function Dashboard() {
             </select>
           </label>
         )}
-        <button
-          type="button"
-          onClick={() => setModalMode("create")}
-          className="rounded-xl bg-teal-500 px-4 py-3 text-sm font-semibold text-white hover:bg-teal-400"
-        >
-          New project
-        </button>
       </div>
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Key performance indicators">
@@ -231,11 +182,7 @@ export default function Dashboard() {
 
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <RecentActivityTable activities={activityData} loading={activityLoading} emptyMessage={emptyMessage} />
-        <RecommendationPanel recommendations={recommendations} emptyMessage={status === "ready" ? "No recommendations available yet." : emptyMessage} />
-      </section>
-
-      <section className="mb-10">
-        <MigrationHistory migrations={migrations} loading={migrationLoading} />
+        <SegmentSummary data={segmentData} loading={segmentLoading} />
       </section>
 
       {error && (
@@ -259,33 +206,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {!loading && !error && projects.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {projects.map((project) => (
-            <article key={project.id} className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div>
-                <Link to={`/projects/${project.id}/customers`} className="text-lg font-semibold text-slate-900 hover:text-cyan-600">
-                  {project.name}
-                </Link>
-                {project.description && <p className="mt-2 line-clamp-2 text-sm text-slate-600">{project.description}</p>}
-                {project.created_at && <p className="mt-4 text-xs text-slate-500">Created {new Date(project.created_at).toLocaleDateString()}</p>}
-              </div>
-              <div className="mt-5 flex gap-4 border-t border-gray-200 pt-4 text-sm">
-                <button type="button" onClick={() => setModalMode({ edit: project })} className="text-slate-500 hover:text-slate-900">Edit</button>
-                <button type="button" onClick={() => handleDelete(project)} className="text-slate-400 hover:text-red-400">Delete</button>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-
-      {modalMode === "create" && (
-        <ProjectFormModal title="New project" submitLabel="Create" onSubmit={handleCreate} onClose={() => setModalMode(null)} />
-      )}
-
-      {modalMode?.edit && (
-        <ProjectFormModal title="Edit project" submitLabel="Save" initialValues={modalMode.edit} onSubmit={(values) => handleUpdate(modalMode.edit.id, values)} onClose={() => setModalMode(null)} />
-      )}
     </div>
   );
 }
