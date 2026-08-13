@@ -6,11 +6,12 @@ docs/architecture/CSV-Upload-Flow.md for the full design.
 import csv
 import io
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
 from email_validator import validate_email, EmailNotValidError
 from fastapi import HTTPException, status
+from dateutil import parser as date_parser
 from sqlalchemy.orm import Session
 
 from app.database.models import Customer, Transaction
@@ -25,6 +26,28 @@ ALLOWED_PAYMENT_METHODS = {
     "online": "Online",
     "other": "Other",
 }
+
+
+def _parse_order_date(value: str) -> date:
+    """Parse common CSV date formats and normalize them to a date object.
+
+    Ambiguous numeric dates such as ``8/10/2026`` are interpreted as
+    month/day/year, matching the CSV files produced by the frontend.
+    ISO dates remain supported and are preferred when supplied.
+    """
+    raw_value = (value or "").strip()
+    if not raw_value:
+        raise ValueError("date is empty")
+
+    try:
+        return date.fromisoformat(raw_value)
+    except ValueError:
+        parsed = date_parser.parse(
+            raw_value,
+            dayfirst=False,
+            yearfirst=False,
+        )
+        return parsed.date() if isinstance(parsed, datetime) else parsed
 
 
 def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str]:
@@ -53,9 +76,9 @@ def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str
 
     order_date_raw = (row.get("order_date") or "").strip()
     try:
-        order_date = date.fromisoformat(order_date_raw)
-    except ValueError:
-        return None, f"order_date '{order_date_raw}' could not be parsed (expected YYYY-MM-DD)"
+        order_date = _parse_order_date(order_date_raw)
+    except (ValueError, OverflowError, TypeError):
+        return None, f"order_date '{order_date_raw}' could not be parsed as a valid date"
     if order_date > date.today():
         return None, "order_date cannot be in the future"
 
