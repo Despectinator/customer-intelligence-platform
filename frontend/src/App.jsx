@@ -9,6 +9,7 @@ import Transactions from "./pages/Transactions";
 import Analytics from "./pages/Analytics";
 import Projects from "./pages/Projects";
 import Upload from "./pages/Upload";
+import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppShell from "./components/layout/AppShell";
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
     </Routes>
