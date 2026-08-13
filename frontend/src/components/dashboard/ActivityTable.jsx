@@ -1,6 +1,7 @@
 export default function ActivityTable({
   activities = [],
   loading = false,
+  emptyMessage = "No recent activity available.",
 }) {
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -14,7 +15,7 @@ export default function ActivityTable({
         </p>
       ) : activities.length === 0 ? (
         <p className="mt-5 rounded-xl border border-dashed border-gray-300 px-4 py-10 text-center text-sm text-slate-500">
-          No recent activity available.
+          {emptyMessage}
         </p>
       ) : (
         <div className="mt-5 overflow-x-auto">

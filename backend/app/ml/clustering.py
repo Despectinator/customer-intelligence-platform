@@ -12,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 
 from app.core.config import settings
 
+MIN_CUSTOMERS_FOR_SEGMENTATION = 4
+
 
 def cluster_customers(
     rfm_records: list[dict],
@@ -46,7 +48,7 @@ def cluster_customers(
     if n_clusters is None:
         n_clusters = settings.KMEANS_N_CLUSTERS
 
-    if len(rfm_records) < 2:
+    if len(rfm_records) < MIN_CUSTOMERS_FOR_SEGMENTATION:
         return {}
 
     n_clusters = min(n_clusters, len(rfm_records))

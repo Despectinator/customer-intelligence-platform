@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { useProject } from "../hooks/useProject";
 import customerService from "../services/customerService";
 
 export default function CustomerDetails() {
-  const { customerId } = useParams();
-  const { currentProject } = useProject();
+  const { projectId, customerId } = useParams();
   const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [segment, setSegment] = useState(null);
@@ -27,13 +25,13 @@ export default function CustomerDetails() {
     let cancelled = false;
 
     async function loadCustomer() {
-      if (!currentProject?.id || !customerId) return;
+      if (!projectId || !customerId) return;
       setLoading(true);
       setError("");
 
       try {
         const [customerData, segmentData] = await Promise.all([
-          customerService.getCustomer(currentProject.id, customerId),
+          customerService.getCustomer(projectId, customerId),
           customerService.getCustomerSegment(customerId),
         ]);
 
@@ -61,7 +59,7 @@ export default function CustomerDetails() {
     return () => {
       cancelled = true;
     };
-  }, [currentProject, customerId]);
+  }, [projectId, customerId]);
 
   function getSegmentStyle(segmentName) {
     const styles = {
@@ -91,13 +89,13 @@ export default function CustomerDetails() {
 
   async function handleSave(event) {
     event.preventDefault();
-    if (!currentProject?.id || !customerId) return;
+    if (!projectId || !customerId) return;
     setSaving(true);
     setError("");
 
     try {
       const updatedCustomer = await customerService.updateCustomer(
-        currentProject.id,
+        projectId,
         customerId,
         {
           first_name: formData.first_name.trim(),
@@ -117,7 +115,7 @@ export default function CustomerDetails() {
   }
 
   async function handleDelete() {
-    if (!currentProject?.id || !customerId) return;
+    if (!projectId || !customerId) return;
     const confirmed = window.confirm(
       `Are you sure you want to delete ${customer.first_name} ${customer.last_name}?\n\nThis action cannot be undone.`
     );
@@ -127,15 +125,15 @@ export default function CustomerDetails() {
     setError("");
 
     try {
-      await customerService.deleteCustomer(currentProject.id, customerId);
-      navigate("/customers");
+      await customerService.deleteCustomer(projectId, customerId);
+      navigate(`/projects/${projectId}/customers`);
     } catch (deleteError) {
       setError(deleteError.message || "Could not delete customer.");
       setDeleting(false);
     }
   }
 
-  if (!currentProject) {
+  if (!projectId) {
     return (
       <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center shadow-sm">
         <p className="font-semibold text-slate-900">No project selected</p>
@@ -145,7 +143,7 @@ export default function CustomerDetails() {
 
   return (
     <div>
-      <Link to="/customers" className="text-sm font-medium text-cyan-600 hover:text-cyan-700">
+      <Link to={`/projects/${projectId}/customers`} className="text-sm font-medium text-cyan-600 hover:text-cyan-700">
         ← Back to Customers
       </Link>
 
@@ -183,7 +181,7 @@ export default function CustomerDetails() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link to={`/customers/${customer.id}/transactions`} className="rounded-xl bg-cyan-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-cyan-700">
+                <Link to={`/projects/${projectId}/customers/${customer.id}/transactions`} className="rounded-xl bg-cyan-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-cyan-700">
                   View Transactions
                 </Link>
                 <button type="button" onClick={() => { resetForm(); setEditing(true); }} disabled={editing || deleting} className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">

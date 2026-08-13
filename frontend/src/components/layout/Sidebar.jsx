@@ -2,8 +2,11 @@ import { LogOut, X } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { navigation } from "../../constants/navigation";
+import { useProject } from "../../hooks/useProject";
 
 export default function Sidebar({ user, signOut, mobileOpen, onClose }) {
+  const { currentProject } = useProject();
+
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-800 bg-slate-950 p-6 transition-transform lg:translate-x-0 ${
@@ -23,10 +26,28 @@ export default function Sidebar({ user, signOut, mobileOpen, onClose }) {
       </div>
 
       <nav className="space-y-2" aria-label="Main navigation">
-        {navigation.map(({ label, path, icon: Icon }) => (
+        {navigation.map(({ label, path, icon: Icon }) => {
+          const projectId = currentProject?.id;
+          const projectPath =
+            label === "Customers"
+              ? projectId
+                ? `/projects/${projectId}/customers`
+                : "/projects"
+              : label === "Analytics"
+                ? projectId
+                  ? `/projects/${projectId}/analytics`
+                  : "/projects"
+                : label === "Upload CSV"
+                  ? projectId
+                    ? `/projects/${projectId}/upload`
+                    : "/projects"
+                  : path;
+
+          return (
           <NavLink
             key={path}
-            to={path}
+            to={projectPath}
+            end={label === "Projects"}
             onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
@@ -37,7 +58,8 @@ export default function Sidebar({ user, signOut, mobileOpen, onClose }) {
             <Icon className="h-5 w-5" />
             {label}
           </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="mt-auto border-t border-slate-800 pt-5">

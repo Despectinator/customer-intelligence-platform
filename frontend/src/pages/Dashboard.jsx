@@ -5,6 +5,7 @@ import {
   getRevenue,
   getActivity,
   getRecommendations,
+  getMigrations,
 } from "../services/dashboardService";
 import projectService from "../services/projectService";
 import { useProject } from "../hooks/useProject";
@@ -13,6 +14,7 @@ import RevenueChart from "../components/dashboard/RevenueChart";
 import SegmentChart from "../components/dashboard/SegmentChart";
 import RecentActivityTable from "../components/dashboard/ActivityTable";
 import RecommendationPanel from "../components/dashboard/RecommendationPanel";
+import MigrationHistory from "../components/dashboard/MigrationHistory";
 import ProjectFormModal from "../components/modal/ProjectFormModal";
 
 export default function Dashboard() {
@@ -23,10 +25,12 @@ export default function Dashboard() {
   const [revenueData, setRevenueData] = useState([]);
   const [activityData, setActivityData] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [migrations, setMigrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [segmentLoading, setSegmentLoading] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
+  const [migrationLoading, setMigrationLoading] = useState(false);
   const [error, setError] = useState("");
   const [dashboardError, setDashboardError] = useState("");
   const [modalMode, setModalMode] = useState(null);
@@ -70,14 +74,16 @@ export default function Dashboard() {
       setDashboardLoading(true);
       setSegmentLoading(true);
       setActivityLoading(true);
+      setMigrationLoading(true);
       setDashboardError("");
 
       try {
-        const [dashboardResponse, revenueResponse, activityResponse, recommendationsResponse] = await Promise.all([
+        const [dashboardResponse, revenueResponse, activityResponse, recommendationsResponse, migrationResponse] = await Promise.all([
           getDashboard(currentProject.id),
           getRevenue(currentProject.id),
           getActivity(currentProject.id),
           getRecommendations(currentProject.id),
+          getMigrations(currentProject.id),
         ]);
 
         console.log("Dashboard response:", dashboardResponse);
@@ -89,6 +95,7 @@ export default function Dashboard() {
         setSegmentData(dashboardResponse.segment_breakdown || []);
         setRevenueData(revenueResponse || []);
         setActivityData(activityResponse || []);
+        setMigrations(migrationResponse || []);
 
         const uniqueRecommendations = [];
         const seenSegments = new Set();
@@ -117,6 +124,7 @@ export default function Dashboard() {
         setDashboardLoading(false);
         setSegmentLoading(false);
         setActivityLoading(false);
+        setMigrationLoading(false);
       }
     }
 
@@ -162,6 +170,18 @@ export default function Dashboard() {
     );
   }
 
+  const status = dashboard?.segmentation_status;
+  const emptyMessage =
+    status === "no_data"
+      ? "No customer data yet."
+      : status === "no_transactions"
+        ? "No transactions yet."
+        : status === "insufficient_data"
+          ? "Insufficient segmentation data."
+          : status === "not_generated"
+            ? "Segmentation has not been generated yet."
+            : "No data available for this project.";
+
   return (
     <div>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -193,20 +213,29 @@ export default function Dashboard() {
       </div>
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Key performance indicators">
-        <KPICard title="Revenue" value={dashboardLoading ? "…" : dashboard ? `₨${dashboard.total_revenue.toLocaleString()}` : "—"} subtitle="Current dataset" icon="₨" color="emerald" />
-        <KPICard title="Customers" value={dashboardLoading ? "…" : dashboard ? dashboard.total_customers : "—"} subtitle="Registered" icon="👥" color="cyan" />
-        <KPICard title="Projects" value={loading ? "…" : projects.length} subtitle="Active" icon="📁" color="amber" />
-        <KPICard title="Segments" value={segmentLoading ? "…" : segmentData.length} subtitle="Generated" icon="🧠" color="rose" />
+        <KPICard title="Revenue" value={dashboard ? `₨${dashboard.total_revenue.toLocaleString()}` : "—"} subtitle="Current dataset" icon="₨" color="emerald" loading={dashboardLoading} />
+        <KPICard title="Customers" value={dashboard ? dashboard.total_customers : "—"} subtitle="Registered" icon="👥" color="cyan" loading={dashboardLoading} />
+        <KPICard title="Projects" value={projects.length} subtitle="Active" icon="📁" color="amber" loading={loading} />
+        <KPICard title="Segments" value={status === "ready" ? segmentData.length : "—"} subtitle={status === "ready" ? "Generated" : "Not available"} icon="🧠" color="rose" loading={segmentLoading} />
       </section>
 
       <section className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2" aria-label="Analytics overview">
-        <RevenueChart data={revenueData} loading={dashboardLoading} />
-        <SegmentChart data={segmentData} loading={segmentLoading} />
+        <RevenueChart data={revenueData} loading={dashboardLoading} emptyMessage={emptyMessage} />
+        <SegmentChart
+          data={segmentData}
+          loading={segmentLoading}
+          status={dashboard?.segmentation_status}
+          message={dashboard?.segmentation_message}
+        />
       </section>
 
       <section className="mb-10 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <RecentActivityTable activities={activityData} loading={activityLoading} />
-        <RecommendationPanel recommendations={recommendations} />
+        <RecentActivityTable activities={activityData} loading={activityLoading} emptyMessage={emptyMessage} />
+        <RecommendationPanel recommendations={recommendations} emptyMessage={status === "ready" ? "No recommendations available yet." : emptyMessage} />
+      </section>
+
+      <section className="mb-10">
+        <MigrationHistory migrations={migrations} loading={migrationLoading} />
       </section>
 
       {error && (

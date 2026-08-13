@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
-import { useProject } from "../hooks/useProject";
 import customerService from "../services/customerService";
 
 export default function Customers() {
-  const { currentProject } = useProject();
+  const { projectId } = useParams();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!currentProject?.id) {
+    if (!projectId) {
       return;
     }
 
@@ -20,7 +19,7 @@ export default function Customers() {
       setError("");
 
       try {
-        const data = await customerService.getCustomers(currentProject.id);
+        const data = await customerService.getCustomers(projectId);
         setCustomers(data || []);
       } catch (loadError) {
         setError(loadError.message || "Could not load customers.");
@@ -30,7 +29,7 @@ export default function Customers() {
     }
 
     loadCustomers();
-  }, [currentProject]);
+  }, [projectId]);
 
   return (
     <div>
@@ -52,7 +51,7 @@ export default function Customers() {
         </p>
       )}
 
-      {!currentProject ? (
+      {!projectId ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center shadow-sm">
           <p className="font-semibold text-slate-900">No project selected</p>
         </div>
@@ -84,7 +83,7 @@ export default function Customers() {
                   <tr key={customer.id} className="hover:bg-slate-50">
                     <td className="px-5 py-4">
                       <Link
-                        to={`/customers/${customer.id}`}
+                        to={`/projects/${projectId}/customers/${customer.id}`}
                         className="font-semibold text-slate-900 hover:text-cyan-600"
                       >
                         {customer.first_name} {customer.last_name}
@@ -96,13 +95,13 @@ export default function Customers() {
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-5">
                         <Link
-                          to={`/customers/${customer.id}`}
+                          to={`/projects/${projectId}/customers/${customer.id}`}
                           className="font-medium text-cyan-600 hover:text-cyan-700"
                         >
                           View Customer
                         </Link>
                         <Link
-                          to={`/customers/${customer.id}/transactions`}
+                          to={`/projects/${projectId}/customers/${customer.id}/transactions`}
                           className="font-medium text-cyan-600 hover:text-cyan-700"
                         >
                           View Transactions

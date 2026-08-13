@@ -18,6 +18,13 @@ from app.schemas.upload import UploadResult, UploadRowError
 from app.services import analytics_service
 
 REQUIRED_COLUMNS = {"first_name", "last_name", "email", "order_date", "order_amount"}
+ALLOWED_PAYMENT_METHODS = {
+    "cash": "Cash",
+    "card": "Card",
+    "bank transfer": "Bank Transfer",
+    "online": "Online",
+    "other": "Other",
+}
 
 
 def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str]:
@@ -49,6 +56,8 @@ def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str
         order_date = date.fromisoformat(order_date_raw)
     except ValueError:
         return None, f"order_date '{order_date_raw}' could not be parsed (expected YYYY-MM-DD)"
+    if order_date > date.today():
+        return None, "order_date cannot be in the future"
 
     order_amount_raw = (row.get("order_amount") or "").strip()
     try:
@@ -58,6 +67,18 @@ def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str
     if order_amount <= 0:
         return None, "order_amount must be a positive number"
 
+    payment_method_raw = (row.get("payment_method") or "").strip()
+    payment_method = (
+        ALLOWED_PAYMENT_METHODS.get(payment_method_raw.casefold())
+        if payment_method_raw
+        else None
+    )
+    if payment_method_raw and payment_method is None:
+        return None, (
+            "payment_method must be one of: Cash, Card, Bank Transfer, "
+            "Online, Other"
+        )
+
     return {
         "first_name": first_name,
         "last_name": last_name,
@@ -66,7 +87,7 @@ def _parse_row(row: dict, row_number: int) -> tuple[dict, str] | tuple[None, str
         "company": (row.get("company") or "").strip() or None,
         "order_date": order_date,
         "order_amount": order_amount,
-        "payment_method": (row.get("payment_method") or "").strip() or None,
+        "payment_method": payment_method,
     }, None
 
 

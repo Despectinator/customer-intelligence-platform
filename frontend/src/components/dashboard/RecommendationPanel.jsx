@@ -1,4 +1,7 @@
-export default function RecommendationPanel({ recommendations = [] }) {
+export default function RecommendationPanel({
+  recommendations = [],
+  emptyMessage = "Recommendations will appear here.",
+}) {
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-900">
@@ -7,7 +10,7 @@ export default function RecommendationPanel({ recommendations = [] }) {
 
       {recommendations.length === 0 ? (
         <p className="mt-5 rounded-xl border border-dashed border-gray-300 px-4 py-10 text-center text-sm text-slate-500">
-          Recommendations will appear here.
+          {emptyMessage}
         </p>
       ) : (
         <ul className="mt-5 space-y-3">

@@ -63,13 +63,19 @@ def test_recompute_creates_segment_rows(db, project):
     customer_b = make_customer(db, project.id, "b@example.com")
     make_transaction(db, customer_b.id, date(2026, 1, 1), "20.00")
 
+    customer_c = make_customer(db, project.id, "c@example.com")
+    make_transaction(db, customer_c.id, date(2026, 3, 1), "100.00")
+
+    customer_d = make_customer(db, project.id, "d@example.com")
+    make_transaction(db, customer_d.id, date(2026, 4, 1), "200.00")
+
     result = analytics_service.recompute_project_segments(db, project.id)
 
     assert customer_a.id in result
     assert customer_b.id in result
 
     segments = db.query(Segment).filter(Segment.project_id == project.id).all()
-    assert len(segments) == 2
+    assert len(segments) == 4
 
 
 def test_recompute_for_customer_finds_the_right_project(db, project):
@@ -94,6 +100,12 @@ def test_recompute_removes_segment_for_customer_without_transactions(db, project
     customer_b = make_customer(db, project.id, "b@example.com")
     make_transaction(db, customer_b.id, date(2026, 1, 1), "15.00")
 
+    customer_c = make_customer(db, project.id, "c@example.com")
+    make_transaction(db, customer_c.id, date(2026, 2, 1), "20.00")
+
+    customer_d = make_customer(db, project.id, "d@example.com")
+    make_transaction(db, customer_d.id, date(2026, 3, 1), "25.00")
+
     analytics_service.recompute_project_segments(db, project.id)
     assert db.query(Segment).filter(Segment.customer_id == customer_a.id).first()
 
@@ -102,6 +114,7 @@ def test_recompute_removes_segment_for_customer_without_transactions(db, project
     analytics_service.recompute_project_segments(db, project.id)
 
     assert db.query(Segment).filter(Segment.customer_id == customer_a.id).first() is None
+    assert db.query(Segment).filter(Segment.project_id == project.id).count() == 0
 
 
 def test_segment_history_logs_only_on_actual_label_change(db, project):
@@ -111,17 +124,23 @@ def test_segment_history_logs_only_on_actual_label_change(db, project):
     customer_b = make_customer(db, project.id, "b@example.com")
     make_transaction(db, customer_b.id, date(2026, 1, 1), "15.00")
 
+    customer_c = make_customer(db, project.id, "c@example.com")
+    make_transaction(db, customer_c.id, date(2026, 2, 1), "20.00")
+
+    customer_d = make_customer(db, project.id, "d@example.com")
+    make_transaction(db, customer_d.id, date(2026, 3, 1), "25.00")
+
     # First recompute: both customers are new to Segments -> each gets one
     # Segment_History row (old_segment=None -> new_segment=<label>).
     analytics_service.recompute_project_segments(db, project.id)
     history_after_first_run = db.query(SegmentHistory).all()
-    assert len(history_after_first_run) == 2
+    assert len(history_after_first_run) == 4
 
     # Second recompute with identical data: nothing should have changed,
     # so no new history rows should be added.
     analytics_service.recompute_project_segments(db, project.id)
     history_after_second_run = db.query(SegmentHistory).all()
-    assert len(history_after_second_run) == 2
+    assert len(history_after_second_run) == 4
 
 
 def test_segment_history_logs_a_real_migration(db, project):

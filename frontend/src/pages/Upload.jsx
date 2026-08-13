@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
 import { Upload as UploadIcon, FileText, X } from "lucide-react";
+import { useParams } from "react-router-dom";
 
-import { useProject } from "../hooks/useProject";
 import uploadService from "../services/uploadService";
 
 export default function Upload() {
-  const { currentProject } = useProject();
+  const { projectId } = useParams();
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ export default function Upload() {
   }
 
   async function handleUpload() {
-    if (!currentProject?.id) {
+    if (!projectId) {
       setError("Please select a project first.");
       return;
     }
@@ -62,7 +62,7 @@ export default function Upload() {
 
     try {
       const data = await uploadService.uploadTransactionsCsv(
-        currentProject.id,
+        projectId,
         file
       );
       setResult(data);
@@ -87,7 +87,7 @@ export default function Upload() {
         Upload customer transaction data into the current project.
       </p>
 
-      {!currentProject ? (
+      {!projectId ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center shadow-sm">
           <p className="font-semibold text-slate-900">No project selected</p>
           <p className="mt-2 text-sm text-slate-500">
@@ -100,7 +100,7 @@ export default function Upload() {
             <h2 className="text-lg font-semibold text-slate-900">
               Current Project
             </h2>
-            <p className="mt-1 text-sm text-slate-500">{currentProject.name}</p>
+            <p className="mt-1 text-sm text-slate-500">Project {projectId}</p>
 
             <div className="mt-6 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-10 text-center">
               <UploadIcon className="mx-auto h-10 w-10 text-cyan-600" />

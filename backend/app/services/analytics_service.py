@@ -50,6 +50,9 @@ def recompute_project_segments(db: Session, project_id: uuid.UUID) -> dict[uuid.
 
     cluster_assignment = cluster_customers(rfm_records)
     if not cluster_assignment:
+        db.query(Segment).filter(
+            Segment.project_id == project_id
+        ).delete(synchronize_session=False)
         db.commit()
         return {}
 
@@ -131,16 +134,28 @@ def get_customer_segment(db: Session, customer_id: uuid.UUID) -> Segment | None:
     return db.query(Segment).filter(Segment.customer_id == customer_id).first()
 
 
-def list_recent_migrations(db: Session, project_id: uuid.UUID, limit: int = 20) -> list[SegmentHistory]:
+def list_recent_migrations(db: Session, project_id: uuid.UUID, limit: int = 20) -> list[dict]:
     """
     Recent segment changes across a project, most recent first — powers
     the "customer moved from At Risk to Loyal" live feed on the dashboard.
     """
-    return (
-        db.query(SegmentHistory)
+    rows = (
+        db.query(SegmentHistory, Customer)
         .join(Customer, SegmentHistory.customer_id == Customer.id)
         .filter(Customer.project_id == project_id)
         .order_by(SegmentHistory.changed_at.desc())
         .limit(limit)
         .all()
     )
+
+    return [
+        {
+            "id": history.id,
+            "customer_id": history.customer_id,
+            "customer_name": f"{customer.first_name} {customer.last_name}".strip(),
+            "old_segment": history.old_segment,
+            "new_segment": history.new_segment,
+            "changed_at": history.changed_at,
+        }
+        for history, customer in rows
+    ]

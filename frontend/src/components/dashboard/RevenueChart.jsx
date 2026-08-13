@@ -2,6 +2,7 @@ export default function RevenueChart({
   title = "Revenue Trend",
   data = [],
   loading = false,
+  emptyMessage = "No revenue data available.",
 }) {
   if (loading) {
     return (
@@ -21,7 +22,7 @@ export default function RevenueChart({
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
 
         <div className="mt-5 flex min-h-64 items-center justify-center text-sm text-slate-500">
-          No revenue data available.
+          {emptyMessage}
         </div>
       </section>
     );

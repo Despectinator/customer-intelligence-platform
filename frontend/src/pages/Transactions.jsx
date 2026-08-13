@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import transactionService from "../services/transactionService";
 
 export default function Transactions() {
-  const { customerId } = useParams();
+  const { projectId, customerId } = useParams();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -135,7 +135,7 @@ export default function Transactions() {
   return (
     <div>
       <Link
-        to="/customers"
+        to={`/projects/${projectId}/customers`}
         className="text-sm font-medium text-cyan-600 hover:text-cyan-700"
       >
         ← Back to Customers

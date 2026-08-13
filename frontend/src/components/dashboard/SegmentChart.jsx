@@ -2,6 +2,8 @@ export default function SegmentChart({
   title = "Customer Segments",
   data = [],
   loading = false,
+  status = "ready",
+  message = "",
 }) {
   const maxCustomers = Math.max(
     ...data.map((segment) => Number(segment.customer_count || 0)),
@@ -18,6 +20,19 @@ export default function SegmentChart({
         {loading ? (
           <div className="flex min-h-64 items-center justify-center text-sm text-slate-500">
             Loading segment data...
+          </div>
+        ) : status !== "ready" ? (
+          <div className="flex min-h-64 flex-col items-center justify-center text-center text-sm text-slate-500">
+            <p className="font-semibold text-slate-700">
+              {status === "no_data"
+                ? "No customer data yet"
+                : status === "no_transactions"
+                  ? "No transactions yet"
+                  : status === "insufficient_data"
+                    ? "Insufficient segmentation data"
+                    : "Segmentation not generated"}
+            </p>
+            <p className="mt-2 max-w-sm">{message}</p>
           </div>
         ) : data.length === 0 ? (
           <div className="flex min-h-64 items-center justify-center text-sm text-slate-500">

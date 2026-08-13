@@ -29,7 +29,11 @@ class SegmentSummary(BaseModel):
 class DashboardOverview(BaseModel):
     total_customers: int
     total_revenue: float
+    total_transactions: int
+    segmentable_customers: int
     segment_breakdown: list[SegmentSummary]
+    segmentation_status: str
+    segmentation_message: str
 
 
 class RevenueByDate(BaseModel):
@@ -38,9 +42,9 @@ class RevenueByDate(BaseModel):
 
 
 class SegmentHistoryOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+    id: uuid.UUID
     customer_id: uuid.UUID
+    customer_name: str
     old_segment: Optional[str] = None
     new_segment: str
     changed_at: datetime

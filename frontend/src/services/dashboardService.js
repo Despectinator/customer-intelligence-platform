@@ -28,6 +28,10 @@ export function getActivity(projectId) {
   return api.get(`/projects/${projectId}/dashboard/activity`);
 }
 
+export function getMigrations(projectId) {
+  return api.get(projectPath(projectId, "migrations"));
+}
+
 export default {
   getDashboard,
   getRevenue,
@@ -35,4 +39,5 @@ export default {
   getInsights,
   getRecommendations,
   getActivity,
+  getMigrations,
 };

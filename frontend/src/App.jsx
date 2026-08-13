@@ -21,19 +21,21 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/customers" element={<Customers />} />
           <Route
             path="/projects/:projectId/customers"
             element={<Customers />}
           />
-          <Route path="/customers/:customerId" element={<CustomerDetails />} />
           <Route
-            path="/customers/:customerId/transactions"
+            path="/projects/:projectId/customers/:customerId"
+            element={<CustomerDetails />}
+          />
+          <Route
+            path="/projects/:projectId/customers/:customerId/transactions"
             element={<Transactions />}
           />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/projects/:projectId/analytics" element={<Analytics />} />
           <Route path="/projects" element={<Projects />} />
-          <Route path="/upload" element={<Upload />} />
+          <Route path="/projects/:projectId/upload" element={<Upload />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>

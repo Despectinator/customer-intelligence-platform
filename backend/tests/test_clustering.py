@@ -21,15 +21,19 @@ def test_returns_empty_for_a_single_record():
     assert cluster_customers(records, n_clusters=4) == {}
 
 
-def test_clamps_n_clusters_to_available_customers():
-    # Requesting 4 clusters with only 3 customers should still segment
-    # them (into at most 3 groups), not return nothing. Important for
-    # small/early-stage projects and live demos.
+def test_returns_empty_for_three_customers():
+    # Fewer than four transaction-bearing customers is insufficient for
+    # reliable business segmentation.
     records = [make_record(i, i, i * 10) for i in range(1, 4)]
     result = cluster_customers(records, n_clusters=4)
 
-    assert len(result) == 3
-    assert len(set(result.values())) <= 3
+    assert result == {}
+
+
+def test_returns_empty_for_two_customers():
+    records = [make_record(1, 2, 100), make_record(30, 1, 20)]
+
+    assert cluster_customers(records, n_clusters=4) == {}
 
 
 def test_returns_one_cluster_assignment_per_customer():

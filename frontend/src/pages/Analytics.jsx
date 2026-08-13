@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { useProject } from "../hooks/useProject";
+import { useParams } from "react-router-dom";
 import analyticsService from "../services/analyticsService";
 import customerService from "../services/customerService";
 
 export default function Analytics() {
-  const { currentProject } = useProject();
+  const { projectId } = useParams();
   const [summary, setSummary] = useState([]);
   const [segments, setSegments] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -14,15 +14,15 @@ export default function Analytics() {
   const [error, setError] = useState("");
 
   async function loadAnalytics() {
-    if (!currentProject?.id) return;
+    if (!projectId) return;
     setLoading(true);
     setError("");
 
     try {
       const [summaryData, segmentData, customerData] = await Promise.all([
-        analyticsService.getSegmentSummary(currentProject.id),
-        analyticsService.getSegments(currentProject.id),
-        customerService.getCustomers(currentProject.id),
+        analyticsService.getSegmentSummary(projectId),
+        analyticsService.getSegments(projectId),
+        customerService.getCustomers(projectId),
       ]);
       setSummary(summaryData || []);
       setSegments(segmentData || []);
@@ -38,15 +38,15 @@ export default function Analytics() {
     let cancelled = false;
 
     async function load() {
-      if (!currentProject?.id) return;
+      if (!projectId) return;
       setLoading(true);
       setError("");
 
       try {
         const [summaryData, segmentData, customerData] = await Promise.all([
-          analyticsService.getSegmentSummary(currentProject.id),
-          analyticsService.getSegments(currentProject.id),
-          customerService.getCustomers(currentProject.id),
+          analyticsService.getSegmentSummary(projectId),
+          analyticsService.getSegments(projectId),
+          customerService.getCustomers(projectId),
         ]);
 
         if (!cancelled) {
@@ -67,15 +67,15 @@ export default function Analytics() {
     return () => {
       cancelled = true;
     };
-  }, [currentProject]);
+  }, [projectId]);
 
   async function handleRecompute() {
-    if (!currentProject?.id) return;
+    if (!projectId) return;
     setRecomputing(true);
     setError("");
 
     try {
-      await analyticsService.recomputeSegments(currentProject.id);
+      await analyticsService.recomputeSegments(projectId);
       await loadAnalytics();
     } catch (recomputeError) {
       setError(recomputeError.message || "Could not recompute segments.");
@@ -131,7 +131,7 @@ export default function Analytics() {
         <button
           type="button"
           onClick={handleRecompute}
-          disabled={!currentProject || recomputing}
+          disabled={!projectId || recomputing}
           className="rounded-xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {recomputing ? "Recomputing..." : "Recompute Segments"}
@@ -144,7 +144,7 @@ export default function Analytics() {
         </p>
       )}
 
-      {!currentProject ? (
+      {!projectId ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center shadow-sm">
           <p className="font-semibold text-slate-900">No project selected</p>
         </div>
