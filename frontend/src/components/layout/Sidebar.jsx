@@ -32,22 +32,22 @@ export default function Sidebar({ user, signOut, mobileOpen, onClose }) {
             label === "Customers"
               ? projectId
                 ? `/projects/${projectId}/customers`
-                : "/projects"
+                : path
               : label === "Analytics"
                 ? projectId
                   ? `/projects/${projectId}/analytics`
-                  : "/projects"
+                  : path
                 : label === "Upload CSV"
                   ? projectId
                     ? `/projects/${projectId}/upload`
-                    : "/projects"
+                    : path
                   : path;
 
           return (
           <NavLink
             key={path}
             to={projectPath}
-            end={label === "Projects"}
+            end
             onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${

@@ -39,7 +39,7 @@ class Settings:
         origin.strip()
         for origin in os.getenv(
             "ALLOWED_ORIGINS",
-            "http://localhost:5173,http://localhost:5174,http://localhost:3000",
+            "http://localhost:5173,http://localhost:5174,http://localhost:3000,https://customer-intelligence-platform-three.vercel.app",
         ).split(",")
         if origin.strip()
     ]

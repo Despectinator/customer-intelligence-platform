@@ -21,6 +21,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/customers" element={<Customers />} />
           <Route
             path="/projects/:projectId/customers"
             element={<Customers />}
@@ -34,8 +35,10 @@ function App() {
             element={<Transactions />}
           />
           <Route path="/projects/:projectId/analytics" element={<Analytics />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:projectId/upload" element={<Upload />} />
+          <Route path="/upload" element={<Upload />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
