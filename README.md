@@ -42,7 +42,7 @@ It's built for people managing more than one store or client: each **Project** i
 <table>
 <tr>
 <td width="50%"><img src="docs/images/login.png" alt="Sign in"></td>
-<td width="50%"><img src="docs/images/dashboard.png" alt="Dashboard"></td>
+<td width="50%"><img src="docs/images/dashboard.jpeg" alt="Dashboard"></td>
 </tr>
 <tr>
 <td align="center"><sub>Sign in</sub></td>
@@ -50,7 +50,7 @@ It's built for people managing more than one store or client: each **Project** i
 </tr>
 </table>
 
-> The dashboard screenshot above shows the empty state. Swap `docs/images/dashboard.png` for a screenshot taken with a project that has real data loaded — segment charts and KPIs are far more convincing populated.
+> The dashboard screenshot shows a populated project with live KPIs, revenue trends, customer segments, recent activity, and segment summaries.
 
 ## Tech Stack
 
